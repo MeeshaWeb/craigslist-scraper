@@ -5,18 +5,16 @@ from email.mime.text import MIMEText
 from main import config
 
 
-def send_mail(recipient):
-    recipients_list = [recipient]
+def send_mail(email_subject: str, body_text: str):
+    recipients_list = [config["EMAIL_SENDER"]["email_receiver"]]
     for recipient in recipients_list:
         sender = config["EMAIL_SENDER"]["email_sender"]
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = "Craigs list notification"
+        msg['Subject'] = email_subject
         msg['From'] = sender
         msg['To'] = recipient
 
-        text = """\
-        hello, 
-        I am Interested in your listing. Please reply with the VIN# for this vehicle"""
+        text = body_text
 
         part = MIMEText(text, "plain")
         msg.attach(part)

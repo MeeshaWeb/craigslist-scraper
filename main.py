@@ -3,6 +3,8 @@ import configparser
 import os
 import sys
 
+from email_sender import send_mail
+
 base_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(1, base_path)
 
@@ -41,6 +43,7 @@ def main():
     for post in data:
         sms = slack_msg_sender.SlackMsgSender(channel=post["auto_make_model"], text=post["post_title"])
         sms.send_slack_msg()
+        send_mail(email_subject=post["post_title"], body_text=post["post_url"])
 
     return data
 

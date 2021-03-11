@@ -48,7 +48,7 @@ def main():
 
         sms = slack_msg_sender.SlackMsgSender(channel=auto_make_model_val)
         for post in data:
-            sms.send_slack_msg(msg_text=post["post_title"])
+            sms.send_slack_msg(post_title=post["post_title"], post_url=post["post_url"])
             send_mail(email_subject=post["post_title"], body_text=post["post_url"])
             # wait 1 second before sending out emails and slack msgs
             time.sleep(1)

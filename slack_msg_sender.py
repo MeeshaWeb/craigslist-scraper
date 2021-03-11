@@ -16,6 +16,10 @@ def get_slack_conversations():
         logger.error(str(error))
 
 
+def generate_slack_msg(post_title: str, post_url: str):
+    return post_title + "\n" + post_url
+
+
 class SlackMsgSender:
     def __init__(self, channel):
         self.channel = channel.lower()
@@ -49,13 +53,14 @@ class SlackMsgSender:
         except SlackApiError as e:
             logger.error(e.response["error"])
 
-    def send_slack_msg(self, msg_text):
+    def send_slack_msg(self, post_title, post_url):
         channel_id = self.get_slack_channel_id()
         if channel_id is None:
             channel_id = self.create_slack_channel()
 
         if channel_id is not None:
             try:
+                msg_text = generate_slack_msg(post_title=post_title, post_url=post_url)
                 slack_token = config["SLACK"]["oauth_token"]
                 client = WebClient(token=slack_token)
                 response = client.chat_postMessage(

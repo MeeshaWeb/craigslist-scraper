@@ -16,6 +16,22 @@ def get_slack_conversations():
         logger.error(str(error))
 
 
+def get_slack_channel_id(channel_name):
+    conversations = get_slack_conversations()
+    if conversations is not None:
+        if len(conversations) > 0:
+            channel_id = None
+            for conversation in conversations:
+                if conversation["name"] == channel_name:
+                    channel_id = conversation["id"]
+
+            return channel_id
+        else:
+            return None
+    else:
+        return None
+
+
 def generate_slack_msg(post_title: str, post_url: str):
     return post_title + "\n" + post_url
 
@@ -23,21 +39,7 @@ def generate_slack_msg(post_title: str, post_url: str):
 class SlackMsgSender:
     def __init__(self, channel):
         self.channel = channel.lower()
-
-    def get_slack_channel_id(self):
-        conversations = get_slack_conversations()
-        if conversations is not None:
-            if len(conversations) > 0:
-                channel_id = None
-                for conversation in conversations:
-                    if conversation["name"] == self.channel:
-                        channel_id = conversation["id"]
-
-                return channel_id
-            else:
-                return None
-        else:
-            return None
+        self.channel_id = get_slack_channel_id(channel_name=channel)
 
     def create_slack_channel(self):
         try:
@@ -54,17 +56,16 @@ class SlackMsgSender:
             logger.error(e.response["error"])
 
     def send_slack_msg(self, post_title, post_url):
-        channel_id = self.get_slack_channel_id()
-        if channel_id is None:
-            channel_id = self.create_slack_channel()
+        if self.channel_id is None:
+            self.channel_id = self.create_slack_channel()
 
-        if channel_id is not None:
+        if self.channel_id is not None:
             try:
                 msg_text = generate_slack_msg(post_title=post_title, post_url=post_url)
                 slack_token = config["SLACK"]["oauth_token"]
                 client = WebClient(token=slack_token)
                 response = client.chat_postMessage(
-                    channel=channel_id,
+                    channel=self.channel_id,
                     text=msg_text
                 )
                 logger.info("message sending status code: {status_code}".format(status_code=response.status_code))
